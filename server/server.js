@@ -8,7 +8,10 @@ const formRoutes = require('./routes/formRoutes');
 const responseRoutes = require('./routes/responseRoutes');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*',  // allow all for now
+  credentials: true,
+}));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
