@@ -6,12 +6,13 @@ const responseSchema = new mongoose.Schema({
     ref: "Form",
     required: true,
   },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // ✅ needed for populate("user")
-  },
+  email: String,
   answers: [
     {
+      questionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
       question: String,
       answer: String,
     },

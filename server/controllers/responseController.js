@@ -58,7 +58,7 @@ exports.getAnalytics = async (req, res) => {
         q.options.forEach((opt) => (counts[opt] = 0));
 
         responses.forEach((r) => {
-          const ans = r.answers.find((a) => a.questionId?.toString() === q._id.toString());
+          const ans = r.answers.find((a) => a.questionId.toString() === questionId.toString());
           if (ans && counts.hasOwnProperty(ans.answer)) {
             counts[ans.answer]++;
           }
