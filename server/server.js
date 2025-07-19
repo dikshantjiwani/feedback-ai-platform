@@ -9,7 +9,7 @@ const responseRoutes = require('./routes/responseRoutes');
 
 const app = express();
 app.use(cors({
-  origin: '*',  // allow all for now
+  origin: "https://feedback-ai-platform.vercel.app", 
   credentials: true,
 }));
 app.use(express.json());
