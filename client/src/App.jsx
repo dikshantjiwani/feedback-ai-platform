@@ -9,7 +9,9 @@ import Header from "./components/Header"; // Your nav bar component
 
 function LayoutWrapper() {
   const location = useLocation();
-  const hideHeader = location.pathname === "/" || location.pathname === "/register";
+  const hideHeaderRoutes = ["/", "/register"];
+  const isPublicFormRoute = location.pathname.startsWith("/form/");
+  const hideHeader = hideHeaderRoutes.includes(location.pathname) || isPublicFormRoute;
 
   return (
     <>
