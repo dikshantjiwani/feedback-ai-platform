@@ -6,7 +6,7 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   if (!token) return null; // don't show if not logged in
