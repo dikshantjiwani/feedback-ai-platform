@@ -1,0 +1,71 @@
+const Form = require('../models/Form');
+const { nanoid } = require('nanoid');
+
+// @route POST /api/form/create
+exports.createForm = async (req, res) => {
+  try {
+    const { title, questions } = req.body;
+    const slug = nanoid(8); // unique form link ID
+
+    const form = await Form.create({
+      title,
+      questions,
+      createdBy: req.user._id,
+      slug,
+    });
+
+    res.status(201).json(form);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @route GET /api/form/:slug (public)
+exports.getFormBySlug = async (req, res) => {
+  try {
+    const form = await Form.findOne({ slug });
+    if (!form) return res.status(404).json({ message: 'Form not found' });
+
+    res.json(form);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @route GET /api/form/admin/all
+exports.getFormsByAdmin = async (req, res) => {
+  try {
+    const forms = await Form.find({ createdBy: req.user._id }).sort({ _id: -1 });
+    res.json(forms);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const { Configuration, OpenAIApi } = require('openai');
+
+const openai = new OpenAIApi(
+  new Configuration({ apiKey: process.env.OPENAI_API_KEY })
+);
+
+// @route POST /api/form/suggest
+exports.suggestQuestions = async (req, res) => {
+  const { prompt } = req.body;
+
+  try {
+    const response = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [{
+        role: "user",
+        content: `Suggest 3-5 feedback questions for: ${prompt}.
+                  Format as JSON array of objects with fields: questionText and type (text or mcq).`,
+      }],
+    });
+
+    const parsed = JSON.parse(response.data.choices[0].message.content);
+    res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ message: err.message || "AI generation failed" });
+  }
+};
+
