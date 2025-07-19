@@ -57,7 +57,7 @@ Return the result as a JSON array like:
 
   try {
     const response = await axios.post(
-      "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
       { inputs: fullPrompt },
       {
         headers: {
@@ -66,7 +66,7 @@ Return the result as a JSON array like:
         },
       }
     );
-
+    console.log("Hugging Face raw response:", response.data);
     const textOutput = response.data?.[0]?.generated_text || "";
     const jsonStart = textOutput.indexOf("[");
     const jsonEnd = textOutput.lastIndexOf("]") + 1;
