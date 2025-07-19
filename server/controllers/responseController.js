@@ -94,22 +94,37 @@ exports.getAnalytics = async (req, res) => {
 // @route GET /api/response/:formId/export
 exports.exportCSV = async (req, res) => {
   try {
-    const responses = await Response.find({ formId: req.params.formId });
-    const flatData = responses.map(r => {
-      const flat = { email: r.email };
+    const { formId } = req.params;
+
+    // Populate the user to get their email
+    const responses = await Response.find({ formId })
+      .populate('user', 'email') // ⬅️ populate only the email field from User
+      .lean();
+
+    if (!responses.length) {
+      return res.status(404).json({ message: "No responses found." });
+    }
+
+    const flatData = responses.map((r) => {
+      const flat = {
+        email: r.user?.email || "Anonymous",
+      };
+
       r.answers.forEach((a, i) => {
-        flat[`Q${i+1}`] = a.answer;
+        flat[`Q${i + 1}`] = a.answer || "";
       });
+
       return flat;
     });
 
     const parser = new Parser();
     const csv = parser.parse(flatData);
 
-    res.header('Content-Type', 'text/csv');
-    res.attachment('feedback.csv');
+    res.header("Content-Type", "text/csv");
+    res.attachment("feedback.csv");
     res.send(csv);
   } catch (err) {
+    console.error("[CSV EXPORT ERROR]", err);
     res.status(500).json({ message: "Export failed" });
   }
 };

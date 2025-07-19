@@ -1,16 +1,19 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateForm from "./pages/CreateForm";
 import PublicForm from "./pages/PublicForm";
 import Analytics from "./pages/Analytics";
-import Header from "./components/Header"; 
+import Header from "./components/Header"; // Your nav bar component
 
-function App() {
+function LayoutWrapper() {
+  const location = useLocation();
+  const hideHeader = location.pathname === "/" || location.pathname === "/register";
+
   return (
-    <BrowserRouter>
-      <Header /> {/* ✅ persists across all routes if logged in */}
+    <>
+      {!hideHeader && <Header />}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -19,8 +22,14 @@ function App() {
         <Route path="/form/:slug" element={<PublicForm />} />
         <Route path="/analytics/:formId" element={<Analytics />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <LayoutWrapper />
+    </BrowserRouter>
+  );
+}
