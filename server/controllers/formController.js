@@ -23,9 +23,8 @@ exports.createForm = async (req, res) => {
 // @route GET /api/form/:slug (public)
 exports.getFormBySlug = async (req, res) => {
   try {
-    const form = await Form.findOne({ slug });
+    const form = await Form.findOne({ slug: req.params.slug });
     if (!form) return res.status(404).json({ message: 'Form not found' });
-
     res.json(form);
   } catch (err) {
     res.status(500).json({ message: err.message });
