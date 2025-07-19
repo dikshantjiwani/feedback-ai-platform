@@ -44,20 +44,18 @@ exports.getFormsByAdmin = async (req, res) => {
 
 const axios = require("axios");
 
-// @route POST /api/form/suggest
 exports.suggestQuestions = async (req, res) => {
   const { prompt } = req.body;
 
-  const fullPrompt = `Suggest 3-5 feedback questions for: ${prompt}.
-Return the result as a JSON array like:
+  const fullPrompt = `Suggest 3-5 feedback questions for the topic: "${prompt}". Return the result as JSON in this format:
 [
-  {"questionText": "...", "type": "mcq"},
+  {"questionText": "How satisfied are you with the product?", "type": "mcq"},
   ...
 ]`;
 
   try {
     const response = await axios.post(
-      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
+      "https://api-inference.huggingface.co/models/google/flan-t5-base",
       { inputs: fullPrompt },
       {
         headers: {
@@ -66,23 +64,23 @@ Return the result as a JSON array like:
         },
       }
     );
-    console.log("Hugging Face raw response:", response.data);
-    const textOutput = response.data?.[0]?.generated_text || "";
-    const jsonStart = textOutput.indexOf("[");
-    const jsonEnd = textOutput.lastIndexOf("]") + 1;
+
+    const outputText = response.data[0]?.generated_text || "";
+
+    const jsonStart = outputText.indexOf("[");
+    const jsonEnd = outputText.lastIndexOf("]") + 1;
+    const rawJSON = outputText.slice(jsonStart, jsonEnd);
 
     try {
-      const parsed = JSON.parse(textOutput.slice(jsonStart, jsonEnd));
+      const parsed = JSON.parse(rawJSON);
       res.json(parsed);
-    } catch (err) {
-      console.error("JSON Parse Error:", textOutput);
-      res.status(500).json({ message: "Failed to parse HF response." });
+    } catch (parseErr) {
+      console.error("JSON parse failed:", rawJSON);
+      res.status(500).json({ message: "Failed to parse JSON output." });
     }
+
   } catch (err) {
-    console.error("Hugging Face Error:", err.message || err);
-    res.status(500).json({ message: "HF model request failed" });
+    console.error("Hugging Face API Error:", err.response?.data || err.message);
+    res.status(500).json({ message: "Hugging Face request failed." });
   }
 };
-
-
-
