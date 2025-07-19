@@ -35,7 +35,8 @@ export default function Analytics() {
 
   const handleCSVExport = () => {
     const token = localStorage.getItem("token");
-    const downloadUrl = `http://localhost:5000/api/response/${formId}/export`;
+    const backendBaseUrl = import.meta.env.VITE_API_BASE_URL; // already used elsewhere
+    const downloadUrl = `${backendBaseUrl}/response/${formId}/export`;
 
     fetch(downloadUrl, {
       headers: {
