@@ -14,6 +14,7 @@ export default function Register() {
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
     } catch (err) {
+      console.log(err.response?.data || err.message);
       alert("Registration failed");
     }
   };
