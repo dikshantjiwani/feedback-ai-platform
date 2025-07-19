@@ -42,7 +42,7 @@ exports.getFormsByAdmin = async (req, res) => {
   }
 };
 
-const OpenAI = require('openai');
+const OpenAI = require("openai");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -53,19 +53,25 @@ exports.suggestQuestions = async (req, res) => {
   const { prompt } = req.body;
 
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [{
-        role: "user",
-        content: `Suggest 3-5 feedback questions for: ${prompt}.
-                  Format as JSON array of objects with fields: questionText and type (text or mcq).`,
-      }],
+      messages: [
+        {
+          role: "user",
+          content: `Suggest 3-5 feedback questions for: ${prompt}.
+                    Format as JSON array of objects with fields: questionText and type (text or mcq).`,
+        },
+      ],
     });
 
-    const parsed = JSON.parse(response.data.choices[0].message.content);
+    const content = response.choices[0].message.content;
+
+    // Safely parse JSON if it is valid
+    const parsed = JSON.parse(content);
     res.json(parsed);
   } catch (err) {
-    res.status(500).json({ message: err.message || "AI generation failed" });
+    console.error("OpenAI Error:", err);
+    res.status(500).json({ message: "AI generation failed" });
   }
 };
 
