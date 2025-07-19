@@ -38,11 +38,21 @@ export default function Login() {
       />
 
       <button
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 text-white px-4 py-2 rounded w-full"
         onClick={handleSubmit}
       >
         Login
       </button>
+
+      <p className="text-sm mt-4 text-center">
+        Don’t have an account?{" "}
+        <span
+          onClick={() => navigate("/register")}
+          className="text-blue-600 underline cursor-pointer"
+        >
+          Register here
+        </span>
+      </p>
     </div>
   );
 }
