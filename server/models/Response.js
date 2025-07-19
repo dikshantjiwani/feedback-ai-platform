@@ -6,7 +6,10 @@ const responseSchema = new mongoose.Schema({
     ref: "Form",
     required: true,
   },
-  email: String,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // ✅ needed for populate("user")
+  },
   answers: [
     {
       question: String,
