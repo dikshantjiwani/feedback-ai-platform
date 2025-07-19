@@ -12,7 +12,7 @@ export default function Analytics() {
     const fetchData = async () => {
       try {
         const res = await api.get(`/response/${formId}/analytics`);
-        console.log("📊 Analytics data:", res.data);
+        console.log("📊 Analytics data:", res.data.analytics);
         setAnalytics(res.data.analytics);
       } catch (err) {
         console.error("Analytics fetch failed", err);
@@ -94,7 +94,7 @@ export default function Analytics() {
             className="mb-6 border rounded-lg p-4 bg-gray-50 shadow-sm"
           >
             <div className="text-sm text-gray-600 mb-2">
-              📧 <strong>{response.user?.email || "Anonymous"}</strong> — 🕒{" "}
+              📧 <strong>{response.email || "Anonymous"}</strong> — 🕒{" "}
               {new Date(response.submittedAt).toLocaleString()}
             </div>
             <ul className="list-disc pl-5 space-y-1">
