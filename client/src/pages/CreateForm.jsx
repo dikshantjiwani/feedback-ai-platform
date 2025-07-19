@@ -37,7 +37,7 @@ export default function CreateForm() {
       const res = await api.post("/form/suggest", { prompt: newPrompt });
       setQuestions(res.data);
     } catch (err) {
-      alert("AI Suggestion failed.");
+      alert("AI Model will be integrated soon. SOrry for the delay!");
     }
     setLoading(false);
   };

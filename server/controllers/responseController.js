@@ -107,7 +107,7 @@ exports.exportCSV = async (req, res) => {
 
     const flatData = responses.map((r) => {
       const flat = {
-        email: r.user?.email || "Anonymous",
+        email: r.email || "Anonymous",
       };
 
       r.answers.forEach((a, i) => {

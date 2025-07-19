@@ -68,30 +68,6 @@ export default function Analytics() {
         </button>
       </div>
 
-    {analytics.map((item, idx) => (
-      <div key={idx} className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">{item.question}</h3>
-
-        {item.type === "mcq" ? (
-          Object.keys(item.data).length > 0 ? (
-            <AnalyticsChart question={item.question} data={item.data} />
-          ) : (
-            <p className="text-sm text-gray-500">No responses yet</p>
-          )
-        ) : item.type === "text" ? (
-          item.data.length > 0 ? (
-            <ul className="list-disc pl-6 space-y-1">
-              {item.data.map((ans, i) => (
-                <li key={i}>{ans}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500">No responses yet</p>
-          )
-        ) : null}
-      </div>
-    ))}
-
 
       {/* Raw response section */}
       <div className="mt-10">
