@@ -1,4 +1,4 @@
-import QRCode from "react-qrcode";
+import {QRCode} from "react-qrcode";
 
 export default function QRCodeDisplay({ url }) {
   return (
