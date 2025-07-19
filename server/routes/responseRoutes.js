@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { submitResponse, getResponses } = require('../controllers/responseController');
+const { submitResponse, getResponses, getRawResponses } = require('../controllers/responseController');
 const { protect } = require('../middlewares/authMiddleware');
 const { getAnalytics, exportCSV } = require('../controllers/responseController');
 
