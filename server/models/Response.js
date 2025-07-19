@@ -9,10 +9,6 @@ const responseSchema = new mongoose.Schema({
   email: String,
   answers: [
     {
-      questionId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-      },
       question: String,
       answer: String,
     },
