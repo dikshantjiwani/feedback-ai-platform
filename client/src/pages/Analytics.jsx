@@ -6,6 +6,7 @@ import AnalyticsChart from "../components/AnalyticsChart";
 export default function Analytics() {
   const { formId } = useParams();
   const [analytics, setAnalytics] = useState([]);
+  const [rawResponses, setRawResponses] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,10 +17,20 @@ export default function Analytics() {
         console.error("Analytics fetch failed");
       }
     };
+
+    const fetchRaw = async () => {
+      try {
+        const res = await api.get(`/response/${formId}/raw`);
+        setRawResponses(res.data);
+      } catch (err) {
+        console.error("Raw response fetch failed");
+      }
+    };
+
     fetchData();
+    fetchRaw();
   }, [formId]);
 
-  // ⬇️ CSV export handler
   const handleCSVExport = () => {
     const token = localStorage.getItem("token");
     const downloadUrl = `http://localhost:5000/api/response/${formId}/export`;
@@ -70,6 +81,29 @@ export default function Analytics() {
           )}
         </div>
       ))}
+
+      {/* Raw response section */}
+      <div className="mt-10">
+        <h2 className="text-xl font-semibold mb-4">📝 Individual User Responses</h2>
+        {rawResponses.map((response, i) => (
+          <div
+            key={i}
+            className="mb-6 border rounded-lg p-4 bg-gray-50 shadow-sm"
+          >
+            <div className="text-sm text-gray-600 mb-2">
+              📧 <strong>{response.user?.email || "Anonymous"}</strong> — 🕒{" "}
+              {new Date(response.createdAt).toLocaleString()}
+            </div>
+            <ul className="list-disc pl-5 space-y-1">
+              {response.answers.map((ans, j) => (
+                <li key={j}>
+                  <strong>{ans.question}</strong>: {ans.answer}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

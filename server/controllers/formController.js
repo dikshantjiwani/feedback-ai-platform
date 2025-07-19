@@ -1,5 +1,7 @@
 const Form = require('../models/Form');
 const { nanoid } = require('nanoid');
+const { exec } = require("child_process");
+const path = require("path");
 
 // @route POST /api/form/create
 exports.createForm = async (req, res) => {
@@ -43,58 +45,29 @@ exports.getFormsByAdmin = async (req, res) => {
 };
 
 
-const axios = require("axios");
-
 exports.suggestQuestions = async (req, res) => {
   const { prompt } = req.body;
-  console.log("[INFO] Received prompt:", prompt);
+  const scriptPath = path.join(__dirname, "../scripts/suggest.py");
 
   try {
-    const response = await axios.post(
-      "https://dikshantjiwani-feedback-ai-platform.hf.space/run/predict",
-      { data: [prompt] },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        timeout: 20000, // 20s timeout
+    exec(`python3 "${scriptPath}" "${prompt}"`, (error, stdout, stderr) => {
+      if (error) {
+        console.error("Python error:", stderr);
+        return res.status(500).json({ message: "Local AI suggestion failed." });
       }
-    );
 
-    console.log("[INFO] HF raw response:", response.data);
-
-    const resultText = response.data?.data?.[0] || "";
-    console.log("[INFO] Generated text from Space:", resultText);
-
-    const start = resultText.indexOf("[");
-    const end = resultText.lastIndexOf("]") + 1;
-
-    if (start === -1 || end === -1) {
-      console.error("[ERROR] Could not locate JSON brackets in output.");
-      return res.status(500).json({ message: "Failed to parse generated JSON." });
-    }
-
-    const rawJson = resultText.slice(start, end);
-    console.log("[INFO] Extracted JSON string:", rawJson);
-
-    try {
-      const parsed = JSON.parse(rawJson);
-      console.log("[SUCCESS] Parsed questions:", parsed);
-      return res.json(parsed);
-    } catch (parseErr) {
-      console.error("[ERROR] JSON.parse failed:", parseErr.message);
-      return res.status(500).json({ message: "Failed to parse AI response." });
-    }
-
+      try {
+        const start = stdout.indexOf("[");
+        const end = stdout.lastIndexOf("]") + 1;
+        const json = JSON.parse(stdout.slice(start, end));
+        res.json(json);
+      } catch (parseErr) {
+        console.error("Parsing error:", stdout);
+        res.status(500).json({ message: "Parsing local model output failed." });
+      }
+    });
   } catch (err) {
-    if (err.response) {
-      console.error("[ERROR] Hugging Face API response error:", err.response.status, err.response.data);
-    } else if (err.request) {
-      console.error("[ERROR] No response from Hugging Face:", err.message);
-    } else {
-      console.error("[ERROR] Unexpected error:", err.message);
-    }
-
-    return res.status(500).json({ message: "HF Space request failed." });
+    console.error("Exec error:", err.message);
+    res.status(500).json({ message: "Failed to invoke local model." });
   }
 };
