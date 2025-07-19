@@ -114,3 +114,13 @@ exports.exportCSV = async (req, res) => {
     res.status(500).json({ message: "Export failed" });
   }
 };
+
+// @route GET /api/response/:formId/raw
+exports.getRawResponses = async (req, res) => {
+  try {
+    const responses = await Response.find({ form: req.params.formId }).populate("user", "email");
+    res.json(responses);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch raw responses" });
+  }
+};
