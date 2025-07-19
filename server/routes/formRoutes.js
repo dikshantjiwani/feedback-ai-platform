@@ -4,7 +4,8 @@ const { protect } = require('../middlewares/authMiddleware');
 const {
   createForm,
   getFormBySlug,
-  suggestQuestions
+  suggestQuestions,
+  getFormsByAdmin
 } = require('../controllers/formController');
 
 router.post('/create', protect, createForm);
