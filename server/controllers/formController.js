@@ -47,15 +47,15 @@ const axios = require("axios");
 exports.suggestQuestions = async (req, res) => {
   const { prompt } = req.body;
 
-  const fullPrompt = `Suggest 3-5 feedback questions for the topic: "${prompt}". Return the result as JSON in this format:
+  const fullPrompt = `Suggest 3-5 feedback questions for: "${prompt}". Format your response as JSON array like:
 [
-  {"questionText": "How satisfied are you with the product?", "type": "mcq"},
+  {"questionText": "How would you rate your experience?", "type": "mcq"},
   ...
 ]`;
 
   try {
     const response = await axios.post(
-      "https://api-inference.huggingface.co/models/google/flan-t5-base",
+      "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-alpha",
       { inputs: fullPrompt },
       {
         headers: {
@@ -65,22 +65,20 @@ exports.suggestQuestions = async (req, res) => {
       }
     );
 
-    const outputText = response.data[0]?.generated_text || "";
-
-    const jsonStart = outputText.indexOf("[");
-    const jsonEnd = outputText.lastIndexOf("]") + 1;
-    const rawJSON = outputText.slice(jsonStart, jsonEnd);
+    const output = response.data?.[0]?.generated_text || "";
+    const jsonStart = output.indexOf("[");
+    const jsonEnd = output.lastIndexOf("]") + 1;
+    const json = output.slice(jsonStart, jsonEnd);
 
     try {
-      const parsed = JSON.parse(rawJSON);
+      const parsed = JSON.parse(json);
       res.json(parsed);
-    } catch (parseErr) {
-      console.error("JSON parse failed:", rawJSON);
-      res.status(500).json({ message: "Failed to parse JSON output." });
+    } catch (e) {
+      console.error("Parse failed:", output);
+      res.status(500).json({ message: "JSON parse error" });
     }
-
   } catch (err) {
     console.error("Hugging Face API Error:", err.response?.data || err.message);
-    res.status(500).json({ message: "Hugging Face request failed." });
+    res.status(500).json({ message: "Hugging Face request failed" });
   }
 };
