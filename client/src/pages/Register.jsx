@@ -3,12 +3,15 @@ import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
+  console.log("API base:", import.meta.env.VITE_API_BASE_URL);
+
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async () => {
+    console.log("Submitting registration...");
     try {
       const res = await api.post("/auth/register", form);
       localStorage.setItem("token", res.data.token);
