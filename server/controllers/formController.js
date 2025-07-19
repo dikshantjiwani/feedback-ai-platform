@@ -42,44 +42,47 @@ exports.getFormsByAdmin = async (req, res) => {
   }
 };
 
-const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const axios = require("axios");
 
 // @route POST /api/form/suggest
 exports.suggestQuestions = async (req, res) => {
   const { prompt } = req.body;
 
+  const fullPrompt = `Suggest 3-5 feedback questions for: ${prompt}.
+Return the result as a JSON array like:
+[
+  {"questionText": "...", "type": "mcq"},
+  ...
+]`;
+
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "user",
-          content: `Suggest 3-5 feedback questions for: ${prompt}.
-                    Format the response as a JSON array like:
-                    [{"questionText": "How easy was it to use?", "type": "mcq"}, ...]`,
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct",
+      { inputs: fullPrompt },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HF_API_KEY}`,
+          "Content-Type": "application/json",
         },
-      ],
-    });
+      }
+    );
 
-    const content = response.choices[0].message.content;
+    const textOutput = response.data?.[0]?.generated_text || "";
+    const jsonStart = textOutput.indexOf("[");
+    const jsonEnd = textOutput.lastIndexOf("]") + 1;
 
-    // Try parsing the AI response safely
     try {
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(textOutput.slice(jsonStart, jsonEnd));
       res.json(parsed);
-    } catch (parseErr) {
-      console.error("JSON parsing failed:", content);
-      res.status(500).json({ message: "Failed to parse AI response." });
+    } catch (err) {
+      console.error("JSON Parse Error:", textOutput);
+      res.status(500).json({ message: "Failed to parse HF response." });
     }
-
   } catch (err) {
-    console.error("OpenAI API Error:", err.message || err);
-    res.status(500).json({ message: "AI generation failed" });
+    console.error("Hugging Face Error:", err.message || err);
+    res.status(500).json({ message: "HF model request failed" });
   }
 };
+
 
 
