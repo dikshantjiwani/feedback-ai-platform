@@ -48,38 +48,26 @@ const axios = require("axios");
 exports.suggestQuestions = async (req, res) => {
   const { prompt } = req.body;
 
-  const fullPrompt = `Suggest 3-5 feedback questions for the topic: "${prompt}". Return in JSON format like:
-[
-  {"questionText": "What did you like?", "type": "text"},
-  ...
-]`;
-
   try {
-    const response = await axios.post(
-      "https://api-inference.huggingface.co/models/google/flan-t5-small",
-      { inputs: fullPrompt },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HF_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
+    const hfResponse = await axios.post(
+      "https://dikshantjiwani-feedback-ai-platform.hf.space/run/predict",
+      { data: [prompt] },
+      { headers: { "Content-Type": "application/json" } }
     );
 
-    const text = response.data?.[0]?.generated_text || "";
-    const start = text.indexOf("[");
-    const end = text.lastIndexOf("]") + 1;
+    const textOutput = hfResponse.data.data?.[0];
+    const start = textOutput.indexOf("[");
+    const end = textOutput.lastIndexOf("]") + 1;
 
     try {
-      const json = JSON.parse(text.slice(start, end));
-      res.json(json);
-    } catch (e) {
-      console.error("Parse error:", text);
-      res.status(500).json({ message: "Failed to parse generated response." });
+      const parsed = JSON.parse(textOutput.slice(start, end));
+      res.json(parsed);
+    } catch {
+      throw new Error("JSON parse failed");
     }
 
   } catch (err) {
-    console.error("HF API Error:", err.response?.data || err.message);
-    res.status(500).json({ message: "Hugging Face model failed." });
+    console.error("HF Space error:", err.response?.data || err.message);
+    res.status(500).json({ message: "Question suggestion failed." });
   }
 };
