@@ -48,19 +48,17 @@ exports.getAnalytics = async (req, res) => {
 
   try {
     const form = await Form.findById(formId);
-    if (!form) return res.status(404).json({ message: 'Form not found' });
+    if (!form) return res.status(404).json({ message: "Form not found" });
 
     const responses = await Response.find({ formId });
 
-    const analytics = form.questions.map((q, idx) => {
-      const questionId = q._id.toString();
-
-      if (q.type === 'mcq') {
+    const analytics = form.questions.map((q) => {
+      if (q.type === "mcq") {
         const counts = {};
-        q.options.forEach(opt => (counts[opt] = 0));
+        q.options.forEach((opt) => (counts[opt] = 0));
 
-        responses.forEach(r => {
-          const ans = r.answers.find(a => a.questionId.toString() === questionId);
+        responses.forEach((r) => {
+          const ans = r.answers.find((a) => a.question === q.questionText);
           if (ans && counts.hasOwnProperty(ans.answer)) {
             counts[ans.answer]++;
           }
@@ -68,18 +66,17 @@ exports.getAnalytics = async (req, res) => {
 
         return {
           question: q.questionText,
-          type: 'mcq',
+          type: "mcq",
           data: counts,
         };
       } else {
-        // For text: return all text answers
         const texts = responses
-          .map(r => r.answers.find(a => a.questionId.toString() === questionId)?.answer)
+          .map((r) => r.answers.find((a) => a.question === q.questionText)?.answer)
           .filter(Boolean);
 
         return {
           question: q.questionText,
-          type: 'text',
+          type: "text",
           data: texts,
         };
       }
@@ -87,9 +84,11 @@ exports.getAnalytics = async (req, res) => {
 
     res.json({ analytics });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("[ERROR] Analytics failed:", err);
+    res.status(500).json({ message: "Failed to generate analytics" });
   }
 };
+
 
 
 // @route GET /api/response/:formId/export
